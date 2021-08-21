@@ -14,7 +14,7 @@ running = True
 while running:
     drawScreen()
     for event in pygame.event.get():
-        if (event.type == pygame.KEYDOWN and event.key == pygame.QUIT):
+        if (event.type == pygame.QUIT):
             running = False
         
 pygame.quit()
