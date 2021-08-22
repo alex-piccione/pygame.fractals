@@ -1,7 +1,8 @@
 import pygame
+import random
 from math import sin, cos, radians
 
-WIDTH, HEIGHT = 800,600
+WIDTH, HEIGHT = 1200,960
 pygame.init()
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -9,32 +10,71 @@ pygame.display.set_caption("Fractal 01")
 
 x,y = WIDTH/2, HEIGHT-100
 
-def drawScreen():
-    screen.fill((0,0,0))
-    drawTree(x,y, 0, 8)
+def inScreen(x,y):
+    return (x >+ 0 and x <= WIDTH) and (y >= 0 and y <= HEIGHT)
+
+def lighter(color, step):
+    (r,g,b) = color
+    def increase(v): return min(v+step*15, 255)
+    return (increase(r), increase(g), increase(b))
 
 
-def drawTree(x1, y1, angle, depth):
-    fork_angle = 30
-    base_len = 10
-    if depth > 0:
-        x2 = x1 + int(cos(radians(angle-90)) * depth * base_len)
-        y2 = y1 + int(sin(radians(angle-90)) * depth * base_len)
-        pygame.draw.line(screen, (0, 255, 0), (x1, y1), (x2, y2), 2)
-        #pygame.time.delay(10)
-        pygame.display.update()
-        pygame.time.delay(10)
+def addRandomness(color, step):
+    (r,g,b) = color
+    def f(v): return max(min(v+random.randrange(-100, +100), 255), 0)
+    return (f(r), f(g), f(b))
+
+def drawBranches(ends, step, color):
+
+    if step > 25 or len(ends) > 1500: return
+
+    angle_deviation = 15
+    start_length = 30 - (step*2.5)
+    
+    length = start_length*(step*1.5)
+    if length < 5: return
+
+    color = lighter(color, step)
+    color = addRandomness(color, step)
+    #print(color)
+    new_ends = []
+
+    width = 1 #random.randrange(1,10)
+
+    for end in ends:  
+        (x1, y1), angle = end 
+
+        # left
+        new_angle = angle - angle_deviation
+        x2 = x1 + int(cos(radians(new_angle)) * length)
+        y2 = y1 + int(sin(radians(new_angle)) * length)
+        if inScreen(x2, y2):
+            new_ends.append( ((x2, y2), new_angle))
+        pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
+
+        # right
+        new_angle = angle + angle_deviation
+        x2 = x1 + int(cos(radians(new_angle)) * length)
+        y2 = y1 + int(sin(radians(new_angle)) * length)
+        if inScreen(x2, y2):
+            new_ends.append( ((x2, y2), new_angle))
+        pygame.draw.line(screen, color, (x1, y1), (x2, y2), width)
         
-        # left and right branch
-        drawTree(x2,y2, angle-fork_angle, depth-1)
-        drawTree(x2,y2, angle+fork_angle, depth-1)
+    pygame.display.update()
+    pygame.time.delay(10)
 
+    drawBranches(new_ends, step+1, color)
 
+center = (WIDTH/2, HEIGHT/2)
+start_color = (0, 0, 0)
 running = True
+angle = -90
 while running:
-    screen.fill((0,0,0))
-    drawScreen()
-    pygame.time.delay(5000)
+    #screen.fill((0,0,0))
+    
+    drawBranches( [(center, angle)], 1, start_color)
+    angle +=25
+    pygame.time.delay(10)
     for event in pygame.event.get():
         if (event.type == pygame.QUIT):
             running = False
