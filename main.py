@@ -67,13 +67,19 @@ def drawBranches(ends, step, color):
 
 center = (WIDTH/2, HEIGHT/2)
 start_color = (0, 0, 0)
+start_angle = 0 # required to have Up as start direction
+n_parts = 3 # how many
+
+
+
 running = True
-angle = -90
 while running:
     #screen.fill((0,0,0))
-    
+    angle = start_angle + 360/n_parts
+    if angle > 360:
+        angle = 0
+        screen.fill((0,0,0))
     drawBranches( [(center, angle)], 1, start_color)
-    angle +=25
     pygame.time.delay(10)
     for event in pygame.event.get():
         if (event.type == pygame.QUIT):
